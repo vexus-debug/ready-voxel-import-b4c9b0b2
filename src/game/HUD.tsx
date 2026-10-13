@@ -45,7 +45,7 @@ export function HUD() {
   };
 
   return (
-    <div className="dark pointer-events-none fixed inset-0 z-10 font-pixel text-foreground">
+    <div className="dark pointer-events-none fixed inset-0 z-10 font-mono text-foreground">
       {/* hurt flash */}
       <div className="absolute inset-0 bg-destructive" style={{ opacity: ui.hurt * 0.35 }} />
 
@@ -66,15 +66,11 @@ export function HUD() {
       {/* bottom: hearts + hotbar */}
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
         <div className="text-lg leading-none">{item.name}</div>
-        <div className="flex gap-0.5 self-start text-2xl leading-none drop-shadow">
-          {Array.from({ length: MAX_HEALTH / 2 }, (_, i) => {
-            const v = ui.health - i * 2;
-            return (
-              <span key={i} className={v > 0 ? "text-destructive" : "text-muted-foreground/60"}>
-                {v === 1 ? "❥" : "♥"}
-              </span>
-            );
-          })}
+        <div className="flex w-full items-center gap-2 self-start">
+          <span className="text-xs tracking-widest text-muted-foreground">INTEGRITY</span>
+          <div className="h-2 flex-1 overflow-hidden rounded-full border border-border bg-background/60">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(Math.max(0, ui.health) / MAX_HEALTH) * 100}%` }} />
+          </div>
         </div>
         <div className="flex gap-1 rounded-md bg-background/60 p-1">
           {HOTBAR.map((it, i) => (

@@ -643,19 +643,23 @@ function treeOffset(world: World, X: number, Y: number, Z: number, id: number, o
 const isCity = (id: number) => id >= 32 && id <= 54;
 function cityOffset(world: World, X: number, Y: number, Z: number, out: number[]) {
   out[0] = out[1] = out[2] = 0;
-  if (X < LF_X0 || X > LF_X0 + LF_SIZE || Z < LF_Z0 || Z > LF_Z0 + LF_SIZE || Y <= LF_GROUND) return;
-  let cnt = 0, sx = 0, sz = 0;
+  const inLF = X >= LF_X0 && X <= LF_X0 + LF_SIZE && Z >= LF_Z0 && Z <= LF_Z0 + LF_SIZE && Y > LF_GROUND;
+  const inMetro = !inLF && Math.abs(X - M_CX) <= C_R + 1 && Math.abs(Z - M_CZ) <= C_R + 1 && Y > world.cityGround() + 1;
+  if (!inLF && !inMetro) return;
+  let cnt = 0, sx = 0, sy = 0, sz = 0;
   for (let dy = -1; dy <= 0; dy++)
     for (let dz = -1; dz <= 0; dz++)
       for (let dx = -1; dx <= 0; dx++) {
         const id = world.get(X + dx, Y + dy, Z + dz);
         if (id === 0 || isPassable(id)) continue;
         if (!isCity(id)) return;
-        cnt++; sx += dx + 0.5; sz += dz + 0.5;
+        cnt++; sx += dx + 0.5; sy += dy + 0.5; sz += dz + 0.5;
       }
   if (cnt === 0 || cnt === 8 || cnt === 4) return;
   const k = ((4 - cnt) / 4) / cnt * 1.3;
   out[0] = sx * k; out[2] = sz * k;
+  // beveled rooflines/sills: small vertical chamfer on exposed top/bottom edges
+  if (cnt <= 2) out[1] = sy * 0.22;
 }
 
 /** Feature-preserving normals for Linefield faces: average with coincident vertices whose
@@ -674,7 +678,7 @@ function smoothCityNormals(g: THREE.BufferGeometry, verts: number[], ox: number,
     const k = (ky * 4096 + kx) * 4096 + kz;
     const a = groups.get(k); if (a) a.push(v); else groups.set(k, [v]);
   }
-  const C = Math.cos((35 * Math.PI) / 180);
+  const C = Math.cos((55 * Math.PI) / 180);
   if (scratchN.length < verts.length * 3) scratchN = new Float32Array(verts.length * 3 * 2);
   const out = scratchN;
   for (const list of groups.values()) {
@@ -707,7 +711,8 @@ function cityMat(id: number, wx: number, wz: number) {
     if (id === B.IRON_BARS) return 0;
     return 2;
   }
-  if (wx < LF_X0 || wx >= LF_X0 + LF_SIZE || wz < LF_Z0 || wz >= LF_Z0 + LF_SIZE) return 0;
+  const inMetro = Math.abs(wx - M_CX) <= C_R && Math.abs(wz - M_CZ) <= C_R;
+  if (!inMetro && (wx < LF_X0 || wx >= LF_X0 + LF_SIZE || wz < LF_Z0 || wz >= LF_Z0 + LF_SIZE)) return 0;
   if (id === B.OFFICE_WINDOW) return 1;
   if (id === B.STEEL || id === B.CONCRETE) return 2;
   if (id === B.ASPHALT) return 3;

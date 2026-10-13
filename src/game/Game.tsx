@@ -310,10 +310,13 @@ function Zombies({ target }: { target: React.MutableRefObject<ZombieTarget> }) {
       const grp = groups.current.get(z.id);
       if (grp) {
         grp.position.copy(z.pos);
+        grp.position.y += 0.4 + Math.sin(now * 3 + z.id) * 0.12; // hover bob
         grp.rotation.y = Math.atan2(dx, dz);
-        const legSwing = Math.sin(now * 8) * 0.5 * (speed ? 1 : 0);
-        grp.children[2]!.rotation.x = legSwing;
-        grp.children[3]!.rotation.x = -legSwing;
+        grp.rotation.z = Math.sin(now * 2 + z.id) * 0.08;
+        grp.children[2]!.rotation.x = Math.PI / 2;
+        grp.children[3]!.rotation.x = Math.PI / 2;
+        grp.children[2]!.rotation.z = now * 20;
+        grp.children[3]!.rotation.z = -now * 20;
       }
     }
     target.current.zombies = g.zombies;
@@ -323,37 +326,29 @@ function Zombies({ target }: { target: React.MutableRefObject<ZombieTarget> }) {
     <>
       {ids.map((id) => (
         <group key={id} ref={(el) => (el ? groups.current.set(id, el) : groups.current.delete(id))}>
-          <mesh position={[0, 1.15, 0]}>
-            <boxGeometry args={[0.5, 0.7, 0.3]} />
-            <meshLambertMaterial color="#2f6e8a" />
+          <mesh position={[0, 1.4, 0]}>
+            <sphereGeometry args={[0.38, 20, 14]} />
+            <meshStandardMaterial color="#2a2f38" metalness={0.85} roughness={0.25} />
           </mesh>
-          <mesh position={[0, 1.75, 0]}>
-            <boxGeometry args={[0.5, 0.5, 0.5]} />
-            <meshLambertMaterial color="#4d8f3b" />
+          <mesh position={[0, 1.42, 0.33]}>
+            <sphereGeometry args={[0.11, 12, 10]} />
+            <meshBasicMaterial color="#ff3b4e" toneMapped={false} />
           </mesh>
-          <group position={[-0.12, 0.8, 0]}>
-            <mesh position={[0, -0.4, 0]}>
-              <boxGeometry args={[0.22, 0.8, 0.25]} />
-              <meshLambertMaterial color="#3b3b7a" />
+          <group position={[-0.5, 1.55, 0]}>
+            <mesh>
+              <torusGeometry args={[0.2, 0.035, 8, 20]} />
+              <meshStandardMaterial color="#9aa4b2" metalness={0.9} roughness={0.2} />
             </mesh>
           </group>
-          <group position={[0.12, 0.8, 0]}>
-            <mesh position={[0, -0.4, 0]}>
-              <boxGeometry args={[0.22, 0.8, 0.25]} />
-              <meshLambertMaterial color="#3b3b7a" />
+          <group position={[0.5, 1.55, 0]}>
+            <mesh>
+              <torusGeometry args={[0.2, 0.035, 8, 20]} />
+              <meshStandardMaterial color="#9aa4b2" metalness={0.9} roughness={0.2} />
             </mesh>
           </group>
-          <mesh position={[0, 1.3, 0.35]}>
-            <boxGeometry args={[0.6, 0.18, 0.5]} />
-            <meshLambertMaterial color="#4d8f3b" />
-          </mesh>
-          <mesh position={[0.12, 1.8, 0.26]}>
-            <boxGeometry args={[0.1, 0.08, 0.02]} />
-            <meshBasicMaterial color="#111" />
-          </mesh>
-          <mesh position={[-0.12, 1.8, 0.26]}>
-            <boxGeometry args={[0.1, 0.08, 0.02]} />
-            <meshBasicMaterial color="#111" />
+          <mesh position={[0, 1.02, 0]} rotation-x={Math.PI / 2}>
+            <torusGeometry args={[0.24, 0.025, 6, 24]} />
+            <meshBasicMaterial color="#38e8ff" toneMapped={false} />
           </mesh>
         </group>
       ))}
