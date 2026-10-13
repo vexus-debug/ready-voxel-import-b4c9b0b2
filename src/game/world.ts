@@ -708,7 +708,6 @@ function cityMat(id: number, wx: number, wz: number) {
   if (id >= 32 && id <= 54) {
     if (id === B.TINT_GLASS || id === B.GLASS_CYAN || id === B.GLASS_MAGENTA || id === B.GLASS_GREEN) return 1;
     if (id === B.SEA_LANTERN || id === B.GLOWSTONE || id === B.NEON_ROD || id === B.NEON_MAGENTA) return 4;
-    if (id === B.IRON_BARS) return 0;
     return 2;
   }
   const inMetro = Math.abs(wx - M_CX) <= C_R && Math.abs(wz - M_CZ) <= C_R;
