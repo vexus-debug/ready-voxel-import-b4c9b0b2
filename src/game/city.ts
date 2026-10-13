@@ -13,8 +13,17 @@ const BLK = 24, ROAD = 6; // grid pitch and road width
 
 export function buildCity(seed: number): Uint8Array {
   const g = new Uint8Array(N * N * C_Y);
+  // Futuristic material remap: no medieval/rustic blocks above street level.
+  const FUTURE = {
+    [B.LANTERN]: B.NEON_ROD, [B.DOOR]: B.GLASS_CYAN, [B.LOG]: B.METAL, [B.PLANKS]: B.PANEL_DARK,
+    [B.STONE_BRICK]: B.PANEL_WHITE, [B.MOSSY_BRICK]: B.PANEL_GRAY, [B.BRICK]: B.TERRA_TEAL,
+    [B.TIMBER]: B.PANEL_GRAY, [B.LEAVES]: B.GLASS_GREEN, [B.GRASS]: B.PRISMARINE_DARK,
+    [B.STEEL]: B.METAL, [B.OFFICE_WINDOW]: B.TINT_GLASS, [B.PLASTER]: B.PANEL_WHITE,
+    [B.COBBLE]: B.PANEL_GRAY, [B.STONE]: B.PANEL_GRAY, [B.GLASS]: B.TINT_GLASS,
+  };
   const set = (u, h, v, id) => {
     if (u < -C_R || u > C_R || v < -C_R || v > C_R || h < 0 || h >= C_Y) return;
+    if (h > 0 && FUTURE[id] !== undefined) id = FUTURE[id];
     g[((h * N) + (v + C_R)) * N + (u + C_R)] = id === 0 ? CAIR : id;
   };
   const rnd = (a, b) => hash2(a, b, seed + 4421);
