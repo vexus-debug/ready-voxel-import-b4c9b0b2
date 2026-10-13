@@ -23,7 +23,7 @@ export function buildCity(seed: number): Uint8Array {
   };
   const set = (u, h, v, id) => {
     if (u < -C_R || u > C_R || v < -C_R || v > C_R || h < 0 || h >= C_Y) return;
-    if (h > 0 && FUTURE[id] !== undefined) id = FUTURE[id];
+    if (FUTURE[id] !== undefined && (h > 0 || id === B.GRASS || id === B.DIRT || id === B.STONE || id === B.COBBLE)) id = FUTURE[id];
     g[((h * N) + (v + C_R)) * N + (u + C_R)] = id === 0 ? CAIR : id;
   };
   const rnd = (a, b) => hash2(a, b, seed + 4421);

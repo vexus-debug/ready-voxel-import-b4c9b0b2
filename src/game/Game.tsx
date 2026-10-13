@@ -742,6 +742,11 @@ if (vCM.x > 0.5) {
     vec3 glass = mix(gl_FragColor.rgb * 0.55, env, 0.25 + 0.65 * fres);
     float spec = pow(max(dot(R, normalize(vec3(0.3, 0.8, 0.2))), 0.0), 60.0);
     glass += spec * citySky * 1.2 * cloudDay;
+    // night: random lit office cells (warm/cool) behind the glass
+    vec2 cell = floor(vec2(vCW.x + vCW.z, vCW.y) / vec2(2.0, 3.0));
+    float on = step(0.45, cH(cell + 17.0));
+    vec3 lit = mix(vec3(1.0, 0.78, 0.5), vec3(0.55, 0.85, 1.0), cH(cell + 3.0));
+    glass += lit * on * (1.0 - cloudDay) * 0.9 * (1.0 - mull);
     gl_FragColor.rgb = mix(glass, vec3(0.08, 0.09, 0.11), mull * 0.85);
   } else if (cls < 2.5) { // brushed metal panels with reveal seams + bolts
     float brush = cN(vec2(vCW.x + vCW.z, vCW.y * 40.0)) * 0.5 + cN(vec2((vCW.x + vCW.z) * 60.0, vCW.y)) * 0.5;
@@ -751,6 +756,19 @@ if (vCM.x > 0.5) {
     c = mix(c, env * 0.6 + c * 0.4, fres * 0.55);
     c *= 1.0 - seam * 0.45;
     c += bolt * 0.08;
+    // fine sub-panel grid + micro scratches for sharp close-up detail
+    float sub = max(cLine(fu.x * 4.0 + 0.5, 0.48), cLine(fu.y * 4.0 + 0.5, 0.48));
+    c *= 1.0 - sub * 0.12;
+    c *= 0.94 + 0.12 * cN(vCW.xz * 22.0 + vCW.y * 19.0);
+    // circuit traces glowing at night on some panels
+    float ph = cH(floor(vCW.xz) + floor(vCW.y) * 7.1);
+    float trace = step(0.82, ph) * max(cLine(fu.x * 3.0 + ph, 0.485), cLine(fu.y * 2.0 + ph * 3.0, 0.49));
+    vec3 hue = mix(vec3(0.1, 0.9, 1.0), vec3(1.0, 0.2, 0.8), step(0.91, ph));
+    c += hue * trace * (0.25 + 1.2 * (1.0 - cloudDay));
+    // floor-line neon bands on facades (vertical faces only)
+    float vert = 1.0 - abs(Nn.y);
+    float band = step(0.5, cH(vec2(floor(vCW.y / 4.0), floor((vCW.x + vCW.z) / 24.0)))) * cLine(vCW.y / 4.0, 0.485) * vert;
+    c += hue * band * (0.3 + 1.6 * (1.0 - cloudDay));
     gl_FragColor.rgb = c;
   } else if (cls < 3.5 || cls > 4.5) { // asphalt & road paint: wet puddles
     float wet = smoothstep(0.55, 0.7, cN(vCW.xz * 0.18) * 0.7 + cN(vCW.xz * 0.9) * 0.3);
@@ -758,6 +776,13 @@ if (vCM.x > 0.5) {
     if (cls > 4.5) wet *= 0.4; // painted stripes stay crisp, shed water
     c = mix(c, c * 0.55, wet);
     c += env * (0.08 + 0.6 * fres) * wet;
+    // aggregate speckle for sharp asphalt texture
+    c *= 0.9 + 0.2 * cH(floor(vCW.xz * 24.0));
+    // neon reflections pooled on wet road at night
+    float night = 1.0 - cloudDay;
+    vec3 neonRef = mix(vec3(0.1, 0.8, 1.0), vec3(1.0, 0.15, 0.7), cN(vCW.xz * 0.05 + 9.0));
+    c += neonRef * (0.08 + wet * 0.55) * night * (0.6 + 0.4 * sin(uCityTime * 0.8 + vCW.x * 0.05));
+    if (cls > 4.5) c += vec3(0.9, 0.95, 1.0) * 0.45 * night; // glowing lane paint
     gl_FragColor.rgb = c;
   } else { // neon: glowing core, gentle flicker
     float h = cH(floor(vCW.xz / 4.0) + floor(vCW.y / 6.0));
