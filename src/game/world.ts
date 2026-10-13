@@ -711,7 +711,8 @@ function cityMat(id: number, wx: number, wz: number) {
     if (id === B.IRON_BARS) return 0;
     return 2;
   }
-  if (wx < LF_X0 || wx >= LF_X0 + LF_SIZE || wz < LF_Z0 || wz >= LF_Z0 + LF_SIZE) return 0;
+  const inMetro = Math.abs(wx - M_CX) <= C_R && Math.abs(wz - M_CZ) <= C_R;
+  if (!inMetro && (wx < LF_X0 || wx >= LF_X0 + LF_SIZE || wz < LF_Z0 || wz >= LF_Z0 + LF_SIZE)) return 0;
   if (id === B.OFFICE_WINDOW) return 1;
   if (id === B.STEEL || id === B.CONCRETE) return 2;
   if (id === B.ASPHALT) return 3;
